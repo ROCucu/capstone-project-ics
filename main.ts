@@ -5,6 +5,11 @@ scene.onHitWall(SpriteKind.Player, function (sprite, location) {
         }
     }
 })
+scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile13`, function (sprite, location) {
+    tiles.setCurrentTilemap(tilemap`Train_Room_1`)
+    scene.setBackgroundColor(12)
+    tiles.placeOnTile(mySprite, tiles.getTileLocation(1, 11))
+})
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     if (mySprite.vy < 50) {
         if (Jumps > 0) {
@@ -26,6 +31,14 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile2`, function (sprite, l
         tiles.setTileAt(location, assets.tile`myTile3`)
         Axe += 1
     }
+})
+scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile23`, function (sprite, location) {
+    if (mySprite.tileKindAt(TileDirection.Top, assets.tile`myTile18`)) {
+        if (controller.B.isPressed()) {
+            controller.moveSprite(mySprite, 0, 0)
+        }
+    }
+    tiles.placeOnTile(mySprite, location)
 })
 let mySprite: Sprite = null
 let Jumps = 0
@@ -230,6 +243,8 @@ forever(function () {
             Axe += -1
         }
     } else if (mySprite.isHittingTile(CollisionDirection.Right) && mySprite.tileKindAt(TileDirection.Right, assets.tile`myTile10`)) {
-        tiles.setWallAt(tiles.getTileLocation(64, 8), false)
+        if (Ticket == 1) {
+            tiles.setWallAt(tiles.getTileLocation(64, 8), false)
+        }
     }
 })
