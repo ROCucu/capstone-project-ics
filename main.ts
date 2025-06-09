@@ -2,15 +2,18 @@ namespace SpriteKind {
     export const Ally = SpriteKind.create()
 }
 scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile19`, function (sprite, location) {
-    if (mySprite.tileKindAt(TileDirection.Top, assets.tile`myTile18`)) {
-        if (controller.B.isPressed()) {
-            controller.moveSprite(mySprite, 100, 0)
-            tiles.placeOnTile(mySprite, tiles.getTileLocation(location.column, location.row - 2))
-            tiles.setWallAt(location, true)
-            if (Cooldown_once == 0) {
-                if (info.countdown() == 0) {
-                    info.startCountdown(5)
-                    Cooldown_once += 1
+    if (x == 0) {
+        if (mySprite.tileKindAt(TileDirection.Top, assets.tile`myTile18`)) {
+            if (controller.B.isPressed()) {
+                tiles.placeOnTile(mySprite, tiles.getTileLocation(location.column, location.row - 2))
+                controller.moveSprite(mySprite, 0, 0)
+                tiles.setWallAt(location, true)
+                if (Cooldown_once == 0) {
+                    if (info.countdown() == 0) {
+                        info.startCountdown(5)
+                        Cooldown_once += 1
+                        Jump += 1
+                    }
                 }
             }
         }
@@ -29,10 +32,12 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile13`, function (sprite, 
     tiles.placeOnTile(mySprite, tiles.getTileLocation(1, 11))
 })
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
-    if (mySprite.vy < 50) {
-        if (Jumps > 0) {
-            mySprite.vy += -100
-            Jumps += -1
+    if (Jump == 0) {
+        if (mySprite.vy < 50) {
+            if (Jumps > 0) {
+                mySprite.vy += -100
+                Jumps += -1
+            }
         }
     }
 })
@@ -44,16 +49,27 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile12`, function (sprite, 
         }
     }
 })
+info.onCountdownEnd(function () {
+    x += 1
+    Jump += -1
+    if (tiles.tileAtLocationIsWall(tiles.locationInDirection(mySprite.tilemapLocation(), CollisionDirection.Bottom))) {
+        tiles.setWallAt(tiles.locationInDirection(mySprite.tilemapLocation(), CollisionDirection.Bottom), false)
+    }
+    controller.moveSprite(mySprite, 100, 0)
+})
 scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile21`, function (sprite, location) {
-    if (mySprite.tileKindAt(TileDirection.Top, assets.tile`myTile18`)) {
-        if (controller.B.isPressed()) {
-            controller.moveSprite(mySprite, 100, 0)
-            tiles.placeOnTile(mySprite, tiles.getTileLocation(location.column, location.row - 2))
-            tiles.setWallAt(location, true)
-            if (Cooldown_once == 0) {
-                if (info.countdown() == 0) {
-                    info.startCountdown(5)
-                    Cooldown_once += 1
+    if (x == 0) {
+        if (mySprite.tileKindAt(TileDirection.Top, assets.tile`myTile18`)) {
+            if (controller.B.isPressed()) {
+                tiles.placeOnTile(mySprite, tiles.getTileLocation(location.column, location.row - 2))
+                controller.moveSprite(mySprite, 0, 0)
+                tiles.setWallAt(location, true)
+                if (Cooldown_once == 0) {
+                    if (info.countdown() == 0) {
+                        info.startCountdown(5)
+                        Cooldown_once += 1
+                        Jump += 1
+                    }
                 }
             }
         }
@@ -72,12 +88,16 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile28`, function (sprite, 
     tiles.placeOnTile(mySprite, tiles.getTileLocation(1, 11))
 })
 let mySprite: Sprite = null
+let x = 0
+let Jump = 0
 let Cooldown_once = 0
 let Jumps = 0
 Jumps = 1
 let Ticket = 0
 let Axe = 0
 Cooldown_once = 0
+Jump = 0
+x = 0
 info.changeScoreBy(5)
 mySprite = sprites.create(img`
     . . . . . . f f f f . . . . . . 
