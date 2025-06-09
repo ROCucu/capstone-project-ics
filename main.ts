@@ -1,3 +1,21 @@
+namespace SpriteKind {
+    export const Ally = SpriteKind.create()
+}
+scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile19`, function (sprite, location) {
+    if (mySprite.tileKindAt(TileDirection.Top, assets.tile`myTile18`)) {
+        if (controller.B.isPressed()) {
+            controller.moveSprite(mySprite, 100, 0)
+            tiles.placeOnTile(mySprite, tiles.getTileLocation(location.column, location.row - 2))
+            tiles.setWallAt(location, true)
+            if (Cooldown_once == 0) {
+                if (info.countdown() == 0) {
+                    info.startCountdown(5)
+                    Cooldown_once += 1
+                }
+            }
+        }
+    }
+})
 scene.onHitWall(SpriteKind.Player, function (sprite, location) {
     if (mySprite.isHittingTile(CollisionDirection.Bottom)) {
         if (Jumps == 0) {
@@ -26,25 +44,40 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile12`, function (sprite, 
         }
     }
 })
+scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile21`, function (sprite, location) {
+    if (mySprite.tileKindAt(TileDirection.Top, assets.tile`myTile18`)) {
+        if (controller.B.isPressed()) {
+            controller.moveSprite(mySprite, 100, 0)
+            tiles.placeOnTile(mySprite, tiles.getTileLocation(location.column, location.row - 2))
+            tiles.setWallAt(location, true)
+            if (Cooldown_once == 0) {
+                if (info.countdown() == 0) {
+                    info.startCountdown(5)
+                    Cooldown_once += 1
+                }
+            }
+        }
+    }
+})
 scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile2`, function (sprite, location) {
     if (controller.B.isPressed()) {
         tiles.setTileAt(location, assets.tile`myTile3`)
         Axe += 1
     }
 })
-scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile23`, function (sprite, location) {
-    if (mySprite.tileKindAt(TileDirection.Top, assets.tile`myTile18`)) {
-        if (controller.B.isPressed()) {
-            controller.moveSprite(mySprite, 0, 0)
-        }
-    }
-    tiles.placeOnTile(mySprite, location)
+scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile28`, function (sprite, location) {
+    sprites.destroyAllSpritesOfKind(SpriteKind.Enemy)
+    sprites.destroyAllSpritesOfKind(SpriteKind.Ally)
+    tiles.setCurrentTilemap(tilemap`Train_Room_1`)
+    tiles.placeOnTile(mySprite, tiles.getTileLocation(1, 11))
 })
 let mySprite: Sprite = null
+let Cooldown_once = 0
 let Jumps = 0
 Jumps = 1
 let Ticket = 0
 let Axe = 0
+Cooldown_once = 0
 info.changeScoreBy(5)
 mySprite = sprites.create(img`
     . . . . . . f f f f . . . . . . 
