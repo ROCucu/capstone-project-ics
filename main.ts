@@ -300,7 +300,8 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile28`, function (sprite, 
         tiles.placeOnTile(mySprite, tiles.getTileLocation(3, 14))
         statusbar.value += statusbar.max
     } else if (Boss_Distance == 0) {
-    	
+        tiles.setCurrentTilemap(tilemap`level6`)
+        tiles.placeOnTile(mySprite, tiles.getTileLocation(1, 16))
     } else {
         tiles.setCurrentTilemap(tilemap`level3`)
         Auto_Train_Rooms()
