@@ -56,21 +56,48 @@ info.onCountdownEnd(function () {
         tiles.setWallAt(tiles.locationInDirection(mySprite.tilemapLocation(), CollisionDirection.Bottom), false)
     }
     controller.moveSprite(mySprite, 100, 0)
+    tiles.setCurrentTilemap(tilemap`level3`)
+    for (let index = 0; index < 7; index++) {
+        mySprite2 = sprites.create(img`
+            ........................
+            ........................
+            ........................
+            ........................
+            ..........ffff..........
+            ........ff1111ff........
+            .......fb111111bf.......
+            .......f11111111f.......
+            ......fd11111111df......
+            ......fd11111111df......
+            ......fddd1111dddf......
+            ......fbdbfddfbdbf......
+            ......fcdcf11fcdcf......
+            .......fb111111bf.......
+            ......fffcdb1bdffff.....
+            ....fc111cbfbfc111cf....
+            ....f1b1b1ffff1b1b1f....
+            ....fbfbffffffbfbfbf....
+            .........ffffff.........
+            ...........fff..........
+            ........................
+            ........................
+            ........................
+            ........................
+            `, SpriteKind.Enemy)
+        tiles.placeOnRandomTile(mySprite2, sprites.builtin.forestTiles0)
+        mySprite2.setVelocity(randint(-30, 30), 0)
+        tiles.setTileAt(mySprite2.tilemapLocation(), assets.tile`myTile6`)
+    }
+    EnemySpawned += 1
+})
+statusbars.onZero(StatusBarKind.Health, function (status) {
+    game.gameOver(false)
 })
 scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile21`, function (sprite, location) {
     if (x == 0) {
         if (mySprite.tileKindAt(TileDirection.Top, assets.tile`myTile18`)) {
             if (controller.B.isPressed()) {
                 tiles.placeOnTile(mySprite, tiles.getTileLocation(location.column, location.row - 2))
-                controller.moveSprite(mySprite, 0, 0)
-                tiles.setWallAt(location, true)
-                if (Cooldown_once == 0) {
-                    if (info.countdown() == 0) {
-                        info.startCountdown(5)
-                        Cooldown_once += 1
-                        Jump += 1
-                    }
-                }
             }
         }
     }
@@ -87,14 +114,29 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile28`, function (sprite, 
     tiles.setCurrentTilemap(tilemap`Train_Room_1`)
     tiles.placeOnTile(mySprite, tiles.getTileLocation(1, 11))
 })
-let mySprite: Sprite = null
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSprite) {
+    sprites.destroy(otherSprite)
+    statusbar.value += -1
+})
+let Axe = 0
+let EnemySpawned = 0
+let mySprite2: Sprite = null
+let Ticket = 0
 let x = 0
 let Jump = 0
 let Cooldown_once = 0
+let mySprite: Sprite = null
 let Jumps = 0
+let statusbar: StatusBarSprite = null
+statusbar = statusbars.create(40, 8, StatusBarKind.Health)
 Jumps = 1
-let Ticket = 0
-let Axe = 0
+statusbar.max = 10
+statusbar.value += 10
+statusbar.attachToSprite(mySprite)
+statusbar.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
+statusbar.setLabel("HP")
+statusbar.positionDirection(CollisionDirection.Bottom)
+statusbar.setBarBorder(1, 15)
 Cooldown_once = 0
 Jump = 0
 x = 0
