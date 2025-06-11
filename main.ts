@@ -20,7 +20,7 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile19`, function (sprite, 
     }
 })
 scene.onHitWall(SpriteKind.Player, function (sprite, location) {
-    if (null.isHittingTile(CollisionDirection.Bottom)) {
+    if (mySprite.isHittingTile(CollisionDirection.Bottom)) {
         if (Jumps == 0) {
             Jumps += 1
         }
@@ -160,6 +160,7 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
         100,
         false
         )
+        characterAnimations.setCharacterState(mySprite, characterAnimations.rule(Predicate.Moving))
         controller.moveSprite(mySprite, 100, 0)
     }
 })
@@ -220,6 +221,16 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile12`, function (sprite, 
         }
     }
 })
+scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile42`, function (sprite, location) {
+    if (controller.B.isPressed()) {
+        if (info.score() >= 3) {
+            info.changeScoreBy(-3)
+            statusbar.max += 2
+            statusbar.value += 2
+            tiles.setTileAt(location, assets.tile`transparency16`)
+        }
+    }
+})
 info.onCountdownEnd(function () {
     x += 1
     Train_Value += 1
@@ -243,18 +254,58 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile21`, function (sprite, 
         }
     }
 })
+scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile44`, function (sprite, location) {
+    if (controller.B.isPressed()) {
+        if (info.score() >= 10) {
+            info.changeScoreBy(-10)
+            statusbar.max += 10
+            statusbar.value += 10
+            tiles.setTileAt(location, assets.tile`transparency16`)
+        }
+    }
+})
+scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile43`, function (sprite, location) {
+    if (controller.B.isPressed()) {
+        if (info.score() >= 6) {
+            info.changeScoreBy(-6)
+            statusbar.max += 5
+            statusbar.value += 5
+            tiles.setTileAt(location, assets.tile`transparency16`)
+        }
+    }
+})
 scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile2`, function (sprite, location) {
     if (controller.B.isPressed()) {
         tiles.setTileAt(location, assets.tile`myTile3`)
         Axe += 1
     }
 })
+scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile41`, function (sprite, location) {
+    Train_Value += 1
+    if (controller.B.isPressed()) {
+        Shop_Distance += 3
+        tiles.setCurrentTilemap(tilemap`level0`)
+        Auto_Train_Rooms()
+        tiles.placeOnTile(mySprite, tiles.getTileLocation(1, 11))
+    }
+})
 scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile28`, function (sprite, location) {
+    Shop_Distance += -1
+    Boss_Distance += -1
     sprites.destroyAllSpritesOfKind(SpriteKind.Enemy)
     sprites.destroyAllSpritesOfKind(SpriteKind.Ally)
-    tiles.setCurrentTilemap(tilemap`level3`)
-    tiles.placeOnTile(mySprite, tiles.getTileLocation(1, 11))
-    Auto_Train_Rooms()
+    if (Shop_Distance == 0) {
+        Train_Value += 0
+        tiles.setCurrentTilemap(tilemap`level4`)
+        tiles.placeOnTile(mySprite, tiles.getTileLocation(3, 14))
+        statusbar.value += statusbar.max
+    } else if (Boss_Distance == 0) {
+    	
+    } else {
+        tiles.setCurrentTilemap(tilemap`level3`)
+        Auto_Train_Rooms()
+        tiles.placeOnTile(mySprite, tiles.getTileLocation(1, 11))
+    }
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSprite) {
     if (characterAnimations.matchesRule(mySprite, characterAnimations.rule(Predicate.FacingRight))) {
@@ -276,6 +327,10 @@ let mySprite: Sprite = null
 let Jumps = 0
 let statusbar: StatusBarSprite = null
 let Train_Value = 0
+let Boss_Distance = 0
+let Shop_Distance = 0
+Shop_Distance = 3
+Boss_Distance = 7
 Train_Value = 0
 statusbar = statusbars.create(40, 8, StatusBarKind.Health)
 Jumps = 1
