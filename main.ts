@@ -197,6 +197,19 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile42`, function (sprite, 
         }
     }
 })
+function Random_Tile_Shop () {
+    for (let index = 0; index < 3; index++) {
+        Randomizer = randint(0, 10)
+        tiles.placeOnRandomTile(mySprite, assets.tile`myTile45`)
+        if (Randomizer < 4) {
+            tiles.setTileAt(mySprite.tilemapLocation(), assets.tile`myTile42`)
+        } else if (Randomizer < 8) {
+            tiles.setTileAt(mySprite.tilemapLocation(), assets.tile`myTile43`)
+        } else {
+            tiles.setTileAt(mySprite.tilemapLocation(), assets.tile`myTile44`)
+        }
+    }
+}
 info.onCountdownEnd(function () {
     x += 1
     Train_Value += 1
@@ -270,6 +283,7 @@ function Auto_Train_Rooms () {
             `, SpriteKind.Enemy)
         tiles.placeOnRandomTile(mySprite2, sprites.builtin.forestTiles0)
         mySprite2.setVelocity(randint(-30, 30), 0)
+        mySprite2.setBounceOnWall(true)
         tiles.setTileAt(mySprite2.tilemapLocation(), assets.tile`myTile6`)
     }
     EnemySpawned += 1
@@ -281,9 +295,9 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile2`, function (sprite, l
     }
 })
 scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile41`, function (sprite, location) {
-    Train_Value += 1
     if (controller.B.isPressed()) {
         Shop_Distance += 3
+        Train_Value += 1
         tiles.setCurrentTilemap(tilemap`level0`)
         Auto_Train_Rooms()
         tiles.placeOnTile(mySprite, tiles.getTileLocation(1, 11))
@@ -295,8 +309,10 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile28`, function (sprite, 
     sprites.destroyAllSpritesOfKind(SpriteKind.Enemy)
     sprites.destroyAllSpritesOfKind(SpriteKind.Ally)
     if (Shop_Distance == 0) {
-        Train_Value += 0
+        Train_Value += -1
+        how_much_damage += -1
         tiles.setCurrentTilemap(tilemap`level4`)
+        Random_Tile_Shop()
         tiles.placeOnTile(mySprite, tiles.getTileLocation(3, 14))
         statusbar.value += statusbar.max
     } else if (Boss_Distance == 0) {
@@ -314,17 +330,19 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSp
         sprites.destroy(otherSprite)
     } else {
         sprites.destroy(otherSprite)
-        statusbar.value += -1
+        statusbar.value += how_much_damage
     }
 })
 let Axe = 0
 let EnemySpawned = 0
 let mySprite2: Sprite = null
+let Randomizer = 0
 let Ticket = 0
 let x = 0
 let Jump = 0
 let Cooldown_once = 0
 let mySprite: Sprite = null
+let how_much_damage = 0
 let Jumps = 0
 let statusbar: StatusBarSprite = null
 let Train_Value = 0
@@ -335,6 +353,7 @@ Boss_Distance = 7
 Train_Value = 0
 statusbar = statusbars.create(40, 8, StatusBarKind.Health)
 Jumps = 1
+how_much_damage = -1
 statusbar.max = 10
 statusbar.value += 10
 statusbar.attachToSprite(mySprite)
