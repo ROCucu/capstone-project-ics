@@ -1,5 +1,6 @@
 namespace SpriteKind {
     export const Ally = SpriteKind.create()
+    export const Boss = SpriteKind.create()
 }
 scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile19`, function (sprite, location) {
     if (x == 0) {
@@ -197,19 +198,6 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile42`, function (sprite, 
         }
     }
 })
-function Random_Tile_Shop () {
-    for (let index = 0; index < 3; index++) {
-        Randomizer = randint(0, 10)
-        tiles.placeOnRandomTile(mySprite, assets.tile`myTile45`)
-        if (Randomizer < 4) {
-            tiles.setTileAt(mySprite.tilemapLocation(), assets.tile`myTile42`)
-        } else if (Randomizer < 8) {
-            tiles.setTileAt(mySprite.tilemapLocation(), assets.tile`myTile43`)
-        } else {
-            tiles.setTileAt(mySprite.tilemapLocation(), assets.tile`myTile44`)
-        }
-    }
-}
 info.onCountdownEnd(function () {
     x += 1
     Train_Value += 1
@@ -229,6 +217,15 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile21`, function (sprite, 
         if (mySprite.tileKindAt(TileDirection.Top, assets.tile`myTile18`)) {
             if (controller.B.isPressed()) {
                 tiles.placeOnTile(mySprite, tiles.getTileLocation(location.column, location.row - 2))
+                controller.moveSprite(mySprite, 0, 0)
+                tiles.setWallAt(location, true)
+                if (Cooldown_once == 0) {
+                    if (info.countdown() == 0) {
+                        info.startCountdown(5)
+                        Cooldown_once += 1
+                        Jump += 1
+                    }
+                }
             }
         }
     }
@@ -284,7 +281,7 @@ function Auto_Train_Rooms () {
         tiles.placeOnRandomTile(mySprite2, sprites.builtin.forestTiles0)
         mySprite2.setVelocity(randint(-30, 30), 0)
         mySprite2.setBounceOnWall(true)
-        tiles.setTileAt(mySprite2.tilemapLocation(), assets.tile`myTile6`)
+        tiles.setTileAt(mySprite2.tilemapLocation(), assets.tile`transparency16`)
     }
     EnemySpawned += 1
 }
@@ -294,6 +291,46 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile2`, function (sprite, l
         Axe += 1
     }
 })
+function Random_Tile_Shop () {
+    for (let index = 0; index < 3; index++) {
+        Randomizer = randint(0, 10)
+        tiles.placeOnRandomTile(mySprite, assets.tile`myTile45`)
+        if (Randomizer < 4) {
+            tiles.setTileAt(mySprite.tilemapLocation(), assets.tile`myTile42`)
+        } else if (Randomizer < 8) {
+            tiles.setTileAt(mySprite.tilemapLocation(), assets.tile`myTile43`)
+        } else {
+            tiles.setTileAt(mySprite.tilemapLocation(), assets.tile`myTile44`)
+        }
+    }
+}
+function Boss_Fight () {
+    class Boss extends sprites.ExtendableSprite{
+        health = 30
+        hit(damage: number): void {
+            this.health -= damage
+        }
+
+    constructor(image: Image, SpriteKind: number){
+        super(image,SpriteKind)
+        this.health = 30
+    }
+
+    }
+let Boss_1= new Boss (assets.image`The Conductor`,SpriteKind.Boss)
+statusbar2 = statusbars.create(90, 13, StatusBarKind.Health)
+    statusbar2.attachToSprite(Boss_1)
+    statusbar2.setLabel("Conductor")
+    statusbar2.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
+    statusbar2.max = 30
+    statusbar2.value = 30
+    statusbar2.setBarBorder(2, 5)
+    statusbar2.setColor(1, 2)
+    Boss_1.vy += 20
+    tiles.placeOnTile(Boss_1, tiles.getTileLocation(27, 15))
+    statusbar2.setPosition(mySprite.x, mySprite.y - 80)
+    Placement += 1
+}
 scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile41`, function (sprite, location) {
     if (controller.B.isPressed()) {
         Shop_Distance += 3
@@ -316,8 +353,7 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile28`, function (sprite, 
         tiles.placeOnTile(mySprite, tiles.getTileLocation(3, 14))
         statusbar.value += statusbar.max
     } else if (Boss_Distance == 0) {
-        tiles.setCurrentTilemap(tilemap`level6`)
-        tiles.placeOnTile(mySprite, tiles.getTileLocation(1, 16))
+    	
     } else {
         tiles.setCurrentTilemap(tilemap`level3`)
         Auto_Train_Rooms()
@@ -333,10 +369,11 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSp
         statusbar.value += how_much_damage
     }
 })
+let statusbar2: StatusBarSprite = null
+let Randomizer = 0
 let Axe = 0
 let EnemySpawned = 0
 let mySprite2: Sprite = null
-let Randomizer = 0
 let Ticket = 0
 let x = 0
 let Jump = 0
@@ -350,6 +387,7 @@ let Boss_Distance = 0
 let Shop_Distance = 0
 Shop_Distance = 3
 Boss_Distance = 7
+let Placement = 0
 Train_Value = 0
 statusbar = statusbars.create(40, 8, StatusBarKind.Health)
 Jumps = 1
@@ -389,6 +427,11 @@ tiles.setCurrentTilemap(tilemap`level1`)
 tiles.placeOnRandomTile(mySprite, sprites.builtin.forestTiles0)
 controller.moveSprite(mySprite, 100, 0)
 characterAnimations.setCharacterState(mySprite, characterAnimations.rule(Predicate.Moving))
+tiles.setCurrentTilemap(tilemap`level6`)
+tiles.coverAllTiles(assets.tile`Boss Tiles`, assets.tile`Tiles`)
+tiles.coverAllTiles(assets.tile`Ground Tiles`, assets.tile`Tiles`)
+tiles.placeOnTile(mySprite, tiles.getTileLocation(1, 16))
+Boss_Fight()
 game.onUpdateInterval(10, function () {
     mySprite.vy += 3
 })
@@ -566,5 +609,10 @@ forever(function () {
         if (Ticket == 1) {
             tiles.setWallAt(tiles.getTileLocation(64, 8), false)
         }
+    }
+})
+forever(function () {
+    if (Placement == 1) {
+        statusbar2.setOffsetPadding(-440 + mySprite.x, 295 - mySprite.y)
     }
 })
