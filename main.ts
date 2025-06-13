@@ -360,24 +360,6 @@ statusbars.onZero(StatusBarKind.Health, function (status) {
         }
     }
 })
-scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile21`, function (sprite, location) {
-    if (x == 0) {
-        if (mySprite.tileKindAt(TileDirection.Top, assets.tile`myTile18`)) {
-            if (controller.B.isPressed()) {
-                tiles.placeOnTile(mySprite, tiles.getTileLocation(location.column, location.row - 2))
-                controller.moveSprite(mySprite, 0, 0)
-                tiles.setWallAt(location, true)
-                if (Cooldown_once == 0) {
-                    if (info.countdown() == 0) {
-                        info.startCountdown(5)
-                        Cooldown_once += 1
-                        Jump += 1
-                    }
-                }
-            }
-        }
-    }
-})
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Projectile, function (sprite, otherSprite) {
     if (characterAnimations.matchesRule(mySprite, characterAnimations.rule(Predicate.NotMoving)) == false) {
         sprites.destroy(otherSprite)
@@ -435,7 +417,7 @@ function Auto_Train_Rooms () {
             ........................
             ........................
             `, SpriteKind.Enemy)
-        tiles.placeOnRandomTile(mySprite2, sprites.builtin.forestTiles0)
+        tiles.placeOnRandomTile(mySprite2, assets.tile`transparency16`)
         mySprite2.setVelocity(randint(-30, 30), 0)
         mySprite2.setBounceOnWall(true)
         tiles.setTileAt(mySprite2.tilemapLocation(), assets.tile`transparency16`)
@@ -451,31 +433,20 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile2`, function (sprite, l
 function Random_Tile_Shop () {
     for (let index = 0; index < 3; index++) {
         Randomizer = randint(0, 10)
-        tiles.placeOnRandomTile(mySprite, assets.tile`myTile45`)
+        tiles.placeOnRandomTile(mySprite, assets.tile`transparency16`)
         if (Randomizer < 4) {
-            tiles.setTileAt(mySprite.tilemapLocation(), assets.tile`myTile42`)
+            tiles.setTileAt(mySprite.tilemapLocation(), assets.tile`transparency16`)
         } else if (Randomizer < 8) {
-            tiles.setTileAt(mySprite.tilemapLocation(), assets.tile`myTile43`)
+            tiles.setTileAt(mySprite.tilemapLocation(), assets.tile`transparency16`)
         } else {
-            tiles.setTileAt(mySprite.tilemapLocation(), assets.tile`myTile44`)
+            tiles.setTileAt(mySprite.tilemapLocation(), assets.tile`transparency16`)
         }
     }
 }
 function Boss_Fight () {
-    class Boss extends sprites.ExtendableSprite{
-        health = 30
-        hit(damage: number): void {
-            this.health -= damage
-        }
-
-    constructor(image: Image, SpriteKind: number){
-        super(image,SpriteKind)
-        this.health = 30
-    }
-
-    }
-let Boss_1= new Boss (assets.image`The Conductor`,SpriteKind.Boss)
-mySprite3 = sprites.create(img`
+    let Boss_1= new Boss (assets.image`The Conductor`,SpriteKind.Boss)
+game.setGameOverScoringType(game.ScoringType.HighScore)
+    mySprite3 = sprites.create(img`
         a a a a a a a a a a a a a a a a 
         a a a a a a a a a a a a a a a a 
         a a a a a a a a a a a a a a a a 
@@ -518,6 +489,24 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile41`, function (sprite, 
         tiles.placeOnTile(mySprite, tiles.getTileLocation(1, 11))
     }
 })
+scene.onOverlapTile(SpriteKind.Player, assets.tile`transparency16`, function (sprite, location) {
+    if (x == 0) {
+        if (mySprite.tileKindAt(TileDirection.Top, assets.tile`transparency16`)) {
+            if (controller.B.isPressed()) {
+                tiles.placeOnTile(mySprite, tiles.getTileLocation(location.column, location.row - 2))
+                controller.moveSprite(mySprite, 0, 0)
+                tiles.setWallAt(location, true)
+                if (Cooldown_once == 0) {
+                    if (info.countdown() == 0) {
+                        info.startCountdown(5)
+                        Cooldown_once += 1
+                        Jump += 1
+                    }
+                }
+            }
+        }
+    }
+})
 scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile28`, function (sprite, location) {
     if (Sitted == 1) {
         Shop_Distance += -1
@@ -533,8 +522,8 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile28`, function (sprite, 
             statusbar.value += statusbar.max
         } else if (Boss_Distance == 0) {
             tiles.setCurrentTilemap(tilemap`level6`)
-            tiles.coverAllTiles(assets.tile`Boss Tiles`, assets.tile`Tiles`)
-            tiles.coverAllTiles(assets.tile`Ground Tiles`, assets.tile`Tiles`)
+            tiles.coverAllTiles(assets.tile`transparency16`, assets.tile`transparency16`)
+            tiles.coverAllTiles(assets.tile`transparency16`, assets.tile`transparency16`)
             tiles.placeOnTile(mySprite, tiles.getTileLocation(1, 16))
             Boss_Fight()
         } else {
@@ -1092,7 +1081,9 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Boss, function (sprite, otherSpr
 })
 let projectile2: Sprite = null
 let projectile: Sprite = null
+let Hold_Status_Boss_Bar = 0
 let Random_Boss_Attacks = 0
+let Placement = 0
 let mySprite3: Sprite = null
 let Randomizer = 0
 let Axe = 0
@@ -1116,8 +1107,6 @@ let Shop_Distance = 0
 Shop_Distance = 3
 Boss_Distance = 7
 diffculty = game.askForNumber("What prestige level", 1)
-let Hold_Status_Boss_Bar = 0
-let Placement = 0
 Train_Value = 0
 statusbar = statusbars.create(40, 8, StatusBarKind.Health)
 Jumps = 1
@@ -1131,24 +1120,59 @@ statusbar.positionDirection(CollisionDirection.Bottom)
 statusbar.setBarBorder(1, 15)
 Cooldown_once = 0
 Boss_Created = 0
-Jump = 0
-x = 0
-info.changeScoreBy(5)
-class Player extends sprites.ExtendableSprite{
-    player_health = 200
-    
-    hurt(health: number): void{
-        this.player_health -= health
-        if (this.player_health <= 0){
+class Boss extends sprites.ExtendableSprite{
+        health = 100
+        hit(damage: number): void {
+            this.health -= damage
+            if (this.health <= 0){
+                
+                game.setGameOverScoringType(game.ScoringType.HighScore)
+                game.gameOver(true)
+            }
+        }
+
+    constructor(image: Image, SpriteKind: number){
+        super(image,SpriteKind)
+        this.health = 100
+    }
+
+    }
+class Player extends sprites.ExtendableSprite {
+    healthPlayer = 100
+    hit(damage: number): void {
+        this.healthPlayer -= damage
+        if (this.healthPlayer <= 0) {
+            game.setGameOverScoringType(game.ScoringType.HighScore)
             game.gameOver(false)
         }
     }
-    constructor(image:Image, SpriteKind: number){
-        super(image,SpriteKind)
-        this.player_health = 200
+
+    constructor(image: Image, SpriteKind: number) {
+        super(image, SpriteKind)
+        this.healthPlayer = 100
     }
 }
-mySprite = sprites.create(assets.image`you`, SpriteKind.Player)
+Jump = 0
+x = 0
+info.changeScoreBy(5)
+mySprite = sprites.create(img`
+    . . . . . . f f f f . . . . . . 
+    . . . . f f f 2 2 f f f . . . . 
+    . . . f f f 2 2 2 2 f f f . . . 
+    . . f f f e e e e e e f f f . . 
+    . . f f e 2 2 2 2 2 2 e e f . . 
+    . . f e 2 f f f f f f 2 e f . . 
+    . . f f f f e e e e f f f f . . 
+    . f f e f b f 4 4 f b f e f f . 
+    . f e e 4 1 f d d f 1 4 e e f . 
+    . . f e e d d d d d d e e f . . 
+    . . . f e e 4 4 4 4 e e f . . . 
+    . . e 4 f 2 2 2 2 2 2 f 4 e . . 
+    . . 4 d f 2 2 2 2 2 2 f d 4 . . 
+    . . 4 4 f 4 4 5 5 4 4 f 4 4 . . 
+    . . . . . f f f f f f . . . . . 
+    . . . . . f f . . f f . . . . . 
+    `, SpriteKind.Player)
 scene.cameraFollowSprite(mySprite)
 scene.setBackgroundColor(9)
 tiles.setCurrentTilemap(tilemap`level1`)
@@ -1325,7 +1349,7 @@ forever(function () {
             tiles.setTileAt(tiles.getTileLocation(16, 9), assets.tile`transparency16`)
             tiles.setWallAt(tiles.getTileLocation(16, 10), false)
             tiles.setWallAt(tiles.getTileLocation(16, 9), false)
-            tiles.setTileAt(tiles.getTileLocation(16, 11), assets.tile`myTile4`)
+            tiles.setTileAt(tiles.getTileLocation(16, 11), assets.tile`myTile23`)
             Axe += -1
         }
     } else if (mySprite.isHittingTile(CollisionDirection.Right) && mySprite.tileKindAt(TileDirection.Right, assets.tile`myTile10`)) {
