@@ -1,6 +1,7 @@
 namespace SpriteKind {
     export const Ally = SpriteKind.create()
     export const Boss = SpriteKind.create()
+    export const Boss_Follow = SpriteKind.create()
 }
 scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile19`, function (sprite, location) {
     if (x == 0) {
@@ -135,22 +136,22 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
                 ....................................
                 ....................................
                 `,img`
-                ............................ffff....
-                ..........................fff22fff..
-                .........................fff2222fff.
-                ........................fffeeeeeefff
-                ........................ffe222222eef
-                ........................fe2ffffff2ef
-                ........................ffffeeeeffff
-                .......................ffefbf44fbfef
-                .......................fee41fddf14ee
-                ........................feeddddddeef
-                .........................fee4444eef.
-                ........................e4f222222f4e
-                ........................4df222222fd4
-                ........................44f445544f44
-                ...........................ffffff...
-                ...........................ff..ff...
+                ...............ffff.................
+                .............fff22fff...............
+                ............fff2222fff..............
+                ...........fffeeeeeefff.............
+                ...........ffe222222eef.............
+                ...........fe2ffffff2ef.............
+                ...........ffffeeeeffff.............
+                ..........ffefbf44fbfef.............
+                ..........fee41fddf14ee.............
+                ...........feeddddddeef.............
+                ............fee4444eef..............
+                ...........e4f222222f4e.............
+                ...........4df222222fd4.............
+                ...........44f445544f44.............
+                ..............ffffff................
+                ..............ff..ff................
                 ....................................
                 ....................................
                 ....................................
@@ -312,7 +313,7 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     if (Jump == 0) {
         if (mySprite.vy < 50) {
             if (Jumps > 0) {
-                mySprite.vy += -100
+                mySprite.vy += -115
                 Jumps += -1
             }
         }
@@ -354,6 +355,8 @@ statusbars.onZero(StatusBarKind.Health, function (status) {
             game.gameOver(false)
         } else {
             sprites.destroy(statusbar2.spriteAttachedTo())
+            game.setGameOverScoringType(game.ScoringType.HighScore)
+            game.gameOver(true)
         }
     }
 })
@@ -373,6 +376,15 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile21`, function (sprite, 
                 }
             }
         }
+    }
+})
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Projectile, function (sprite, otherSprite) {
+    if (characterAnimations.matchesRule(mySprite, characterAnimations.rule(Predicate.NotMoving)) == false) {
+        sprites.destroy(otherSprite)
+        statusbar.value += how_much_damage * 0.4
+    } else {
+        sprites.destroy(otherSprite)
+        statusbar.value += how_much_damage * 0.75
     }
 })
 scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile44`, function (sprite, location) {
@@ -463,7 +475,27 @@ function Boss_Fight () {
 
     }
 let Boss_1= new Boss (assets.image`The Conductor`,SpriteKind.Boss)
-Boss_Created += 1
+mySprite3 = sprites.create(img`
+        a a a a a a a a a a a a a a a a 
+        a a a a a a a a a a a a a a a a 
+        a a a a a a a a a a a a a a a a 
+        a a a a a a a a a a a a a a a a 
+        a a a a a a a a a a a a a a a a 
+        a a a a a a a a a a a a a a a a 
+        a a a a a a a a a a a a a a a a 
+        a a a a a a a a a a a a a a a a 
+        a a a a a a a a a a a a a a a a 
+        a a a a a a a a a a a a a a a a 
+        a a a a a a a a a a a a a a a a 
+        a a a a a a a a a a a a a a a a 
+        a a a a a a a a a a a a a a a a 
+        a a a a a a a a a a a a a a a a 
+        a a a a a a a a a a a a a a a a 
+        a a a a a a a a a a a a a a a a 
+        `, SpriteKind.Boss_Follow)
+    mySprite3.setFlag(SpriteFlag.Invisible, true)
+    mySprite3.follow(Boss_1, 99999)
+    Boss_Created += 1
     statusbar2 = statusbars.create(90, 13, StatusBarKind.Health)
     statusbar2.attachToSprite(Boss_1)
     statusbar2.setLabel("Conductor")
@@ -473,7 +505,7 @@ Boss_Created += 1
     statusbar2.setBarBorder(2, 5)
     statusbar2.setColor(1, 2)
     Boss_1.vy += 20
-    tiles.placeOnTile(Boss_1, tiles.getTileLocation(27, 15))
+    tiles.placeOnTile(Boss_1, tiles.getTileLocation(23, 15))
     statusbar2.setPosition(mySprite.x, mySprite.y - 80)
     Placement += 1
 }
@@ -494,13 +526,17 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile28`, function (sprite, 
         sprites.destroyAllSpritesOfKind(SpriteKind.Ally)
         if (Shop_Distance == 0) {
             Train_Value += -1
-            how_much_damage += -1
+            how_much_damage += -1 * diffculty
             tiles.setCurrentTilemap(tilemap`level4`)
             Random_Tile_Shop()
             tiles.placeOnTile(mySprite, tiles.getTileLocation(3, 14))
             statusbar.value += statusbar.max
         } else if (Boss_Distance == 0) {
-        	
+            tiles.setCurrentTilemap(tilemap`level6`)
+            tiles.coverAllTiles(assets.tile`Boss Tiles`, assets.tile`Tiles`)
+            tiles.coverAllTiles(assets.tile`Ground Tiles`, assets.tile`Tiles`)
+            tiles.placeOnTile(mySprite, tiles.getTileLocation(1, 16))
+            Boss_Fight()
         } else {
             tiles.setCurrentTilemap(tilemap`level3`)
             Auto_Train_Rooms()
@@ -520,11 +556,544 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSp
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Boss, function (sprite, otherSprite) {
     if (characterAnimations.matchesRule(mySprite, characterAnimations.rule(Predicate.Moving)) == false) {
         statusbar2.value += how_much_damage
-        tiles.placeOnTile(mySprite, tiles.getTileLocation(25, 16))
+        if (mySprite.x - otherSprite.x < 0) {
+            mySprite.x += -64
+            mySprite.y += -10
+        } else {
+            mySprite.x += 64
+            mySprite.y += -10
+        }
+        Random_Boss_Attacks = randint(1, 6)
+        if (Random_Boss_Attacks <= 2) {
+            animation.runImageAnimation(
+            otherSprite,
+            [img`
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                666666666666666666666666666666
+                `,img`
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                `,img`
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                999999999999999999999999999999
+                `,img`
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                888888888888888888888888888888
+                `,img`
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                222222222222222222222222222222
+                `],
+            100,
+            false
+            )
+            pause(500)
+            if (mySprite.x - otherSprite.x < 5) {
+                Hold_Status_Boss_Bar += 50
+                otherSprite.setVelocity(-100, 0)
+                animation.runImageAnimation(
+                otherSprite,
+                [img`
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    `,img`
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    `,img`
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    `,img`
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    `,img`
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    `],
+                100,
+                false
+                )
+                pause(500)
+                otherSprite.setVelocity(0, 0)
+            } else {
+                Hold_Status_Boss_Bar += -50
+                otherSprite.setVelocity(100, 0)
+                animation.runImageAnimation(
+                otherSprite,
+                [img`
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    666666666666666666666666666666
+                    `,img`
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    `,img`
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    999999999999999999999999999999
+                    `,img`
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    888888888888888888888888888888
+                    `,img`
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    222222222222222222222222222222
+                    `],
+                100,
+                false
+                )
+                pause(500)
+                otherSprite.setVelocity(0, 0)
+            }
+        } else if (Random_Boss_Attacks < 5) {
+            if (mySprite.x - otherSprite.x < 0) {
+                for (let index = 0; index < 6; index++) {
+                    projectile = sprites.createProjectileFromSprite(assets.image`throw fivne`, otherSprite, -50, randint(-30, 30))
+                }
+            } else {
+                for (let index = 0; index < 6; index++) {
+                    projectile2 = sprites.createProjectileFromSprite(img`
+                        . . . . . . . f f . . . 
+                        f f . . f f f b b f f . 
+                        f f f f b b b b b b b f 
+                        f f . . f f f b b f f . 
+                        . . . . . . . f f . . . 
+                        `, otherSprite, 50, randint(-30, 30))
+                }
+            }
+        } else {
+            statusbar2.value += 6 + diffculty
+        }
     } else {
-        statusbar.value += how_much_damage
+        statusbar.value += how_much_damage * 2.5
+        if (mySprite.x - otherSprite.x < 0) {
+            mySprite.x += -64
+            mySprite.y += -10
+        } else {
+            mySprite.x += 64
+            mySprite.y += -10
+        }
     }
 })
+let projectile2: Sprite = null
+let projectile: Sprite = null
+let Random_Boss_Attacks = 0
+let mySprite3: Sprite = null
 let Randomizer = 0
 let Axe = 0
 let EnemySpawned = 0
@@ -541,15 +1110,18 @@ let how_much_damage = 0
 let Jumps = 0
 let statusbar: StatusBarSprite = null
 let Train_Value = 0
+let diffculty = 0
 let Boss_Distance = 0
 let Shop_Distance = 0
 Shop_Distance = 3
 Boss_Distance = 7
+diffculty = game.askForNumber("What prestige level", 1)
+let Hold_Status_Boss_Bar = 0
 let Placement = 0
 Train_Value = 0
 statusbar = statusbars.create(40, 8, StatusBarKind.Health)
 Jumps = 1
-how_much_damage = -1
+how_much_damage = -1 * diffculty
 statusbar.max = 10
 statusbar.value += 10
 statusbar.attachToSprite(mySprite)
@@ -586,12 +1158,6 @@ tiles.setCurrentTilemap(tilemap`level1`)
 tiles.placeOnRandomTile(mySprite, sprites.builtin.forestTiles0)
 controller.moveSprite(mySprite, 100, 0)
 characterAnimations.setCharacterState(mySprite, characterAnimations.rule(Predicate.Moving))
-tiles.setCurrentTilemap(tilemap`level6`)
-tiles.coverAllTiles(assets.tile`Boss Tiles`, assets.tile`Tiles`)
-tiles.coverAllTiles(assets.tile`Ground Tiles`, assets.tile`Tiles`)
-tiles.placeOnTile(mySprite, tiles.getTileLocation(1, 16))
-Boss_Fight()
-Train_Value += 1
 game.onUpdateInterval(10, function () {
     mySprite.vy += 3
 })
@@ -773,6 +1339,6 @@ forever(function () {
 })
 forever(function () {
     if (Placement == 1) {
-        statusbar2.setOffsetPadding(-440 + mySprite.x, 293 - mySprite.y)
+        statusbar2.setOffsetPadding(-376 + Hold_Status_Boss_Bar + mySprite.x, 293 - mySprite.y)
     }
 })
